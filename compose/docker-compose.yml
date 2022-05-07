@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  flash-production-app:
+    image: nginx:${NGINX_IMAGE_VERSION:-stable-alpine}
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+    container_name: ${NGINX_WEB_SERVICE_NAME:-flash-production-app}
+    restart: always
+    ports:
+      - "${IPv4:-0.0.0.0}:${DOCKER_HTTP_:-80}:80"
+      - "${IPv4:-0.0.0.0}:${DOCKER_HTTPS:-443}:443"
+    environment:
+      SSL_POLICY: ${SSL_POLICY:-Mozilla-Intermediate}
+    volumes:
+      - ${NGINX_FILES_PATH:-./data}/conf.d:/etc/nginx/conf.d
+      - ${NGINX_FILES_PATH:-./data}/vhost.d:/etc/nginx/vhost.d
+      - ${NGINX_FILES_PATH:-./data}/html:/usr/share/nginx/html
+      - ${NGINX_FILES_PATH:-./data}/certs:/etc/nginx/certs:ro
+      - ${NGINX_FILES_PATH:-./data}/htpasswd:/etc/nginx/htpasswd:ro
+    logging:
+      driver: ${NGINX_WEB_LOG_DRIVER:-json-file}
+      options:
+        max-size: ${NGINX_WEB_LOG_MAX_SIZE:-4m}
+        max-file: ${NGINX_WEB_LOG_MAX_FILE:-10}
